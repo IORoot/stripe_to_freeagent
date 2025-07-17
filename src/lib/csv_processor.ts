@@ -78,7 +78,7 @@ function parse_payouts_csv(csv_text: string): PayoutTransaction[] {
 		const transaction: PayoutTransaction = {
 			payout_id: values[0]?.replace(/"/g, '') || '',
 			effective_at: values[2]?.replace(/"/g, '') || '',
-			gross: values[5]?.replace(/"/g, '') || '',
+			gross: values[4]?.replace(/"/g, '') || '',
 			trace_id: values[17]?.replace(/"/g, '') || ''
 		};
 

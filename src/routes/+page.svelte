@@ -6,6 +6,7 @@
 	let processing = false;
 	let result = null;
 	let error = null;
+	let summary = null;
 
 	async function handle_file_upload() {
 		if (!balance_file || !payouts_file || balance_file.length === 0 || payouts_file.length === 0) {
@@ -16,15 +17,81 @@
 		processing = true;
 		error = null;
 		result = null;
+		summary = null;
 
 		try {
 			const csv_content = await process_csv_files(balance_file[0], payouts_file[0]);
 			result = csv_content;
+			
+			// Generate summary
+			summary = generate_summary(csv_content);
 		} catch (err) {
 			error = err instanceof Error ? err.message : 'An error occurred while processing files';
 		} finally {
 			processing = false;
 		}
+	}
+
+	function generate_summary(csv_content) {
+		const lines = csv_content.split('\n');
+		const summary = {
+			sales: { count: 0, amount: 0 },
+			fees: { count: 0, amount: 0 },
+			refunds: { count: 0, amount: 0 },
+			transfers: { count: 0, amount: 0 },
+			stripe_debits: { count: 0, amount: 0 }
+		};
+
+		for (const line of lines) {
+			if (!line.trim()) continue;
+			
+			const values = parse_csv_line(line);
+			if (values.length < 3) continue;
+			
+			const amount = parseFloat(values[1]);
+			const description = values[2];
+			
+			if (description.startsWith('sale ')) {
+				summary.sales.count++;
+				summary.sales.amount += amount;
+			} else if (description.startsWith('fee ')) {
+				summary.fees.count++;
+				summary.fees.amount += amount;
+			} else if (description.startsWith('refund ')) {
+				summary.refunds.count++;
+				summary.refunds.amount += amount;
+			} else if (description.startsWith('transfer ')) {
+				summary.transfers.count++;
+				summary.transfers.amount += amount;
+			} else if (description.startsWith('stripe debit ')) {
+				summary.stripe_debits.count++;
+				summary.stripe_debits.amount += amount;
+			}
+		}
+
+		return summary;
+	}
+
+	function parse_csv_line(line) {
+		const result = [];
+		let current = '';
+		let in_quotes = false;
+
+		for (let i = 0; i < line.length; i++) {
+			const char = line[i];
+			
+			if (char === '"') {
+				in_quotes = !in_quotes;
+			} else if (char === ',' && !in_quotes) {
+				result.push(current);
+				current = '';
+			} else {
+				current += char;
+			}
+		}
+		
+		result.push(current);
+		return result;
 	}
 
 	function download_csv() {
@@ -112,11 +179,73 @@
 				{/if}
 
 				<!-- Result Display -->
-				{#if result}
+				{#if result && summary}
 					<div class="bg-green-50 border border-green-200 rounded-lg p-6">
 						<h3 class="text-lg font-semibold text-green-800 mb-4">
 							Processing Complete!
 						</h3>
+						
+						<!-- Summary Table -->
+						<div class="mb-6">
+							<h4 class="text-md font-semibold text-green-800 mb-3">Transaction Summary</h4>
+							<div class="overflow-x-auto">
+								<table class="min-w-full bg-white border border-gray-200 rounded-lg">
+									<thead class="bg-gray-50">
+										<tr>
+											<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+												Item
+											</th>
+											<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+												Amount
+											</th>
+										</tr>
+									</thead>
+									<tbody class="divide-y divide-gray-200">
+										<tr>
+											<td class="px-4 py-2 text-sm text-gray-900">
+												Number of sales ({summary.sales.count})
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												£{summary.sales.amount.toFixed(2)}
+											</td>
+										</tr>
+										<tr>
+											<td class="px-4 py-2 text-sm text-gray-900">
+												Number of fees ({summary.fees.count})
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												£{summary.fees.amount.toFixed(2)}
+											</td>
+										</tr>
+										<tr>
+											<td class="px-4 py-2 text-sm text-gray-900">
+												Number of refunds ({summary.refunds.count})
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												£{summary.refunds.amount.toFixed(2)}
+											</td>
+										</tr>
+										<tr>
+											<td class="px-4 py-2 text-sm text-gray-900">
+												Number of transfer payouts ({summary.transfers.count})
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												£{summary.transfers.amount.toFixed(2)}
+											</td>
+										</tr>
+										<tr>
+											<td class="px-4 py-2 text-sm text-gray-900">
+												Number of stripe debits ({summary.stripe_debits.count})
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												£{summary.stripe_debits.amount.toFixed(2)}
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+
 						<p class="text-green-700 mb-4">
 							Your FreeAgent-compatible CSV has been generated. Click the button below to download it.
 						</p>

@@ -71,6 +71,29 @@
                     <h3 class="text-lg font-semibold text-green-800 mb-4">
                         Processing Complete!
                     </h3>
+                    
+                    <!-- Summary Table -->
+                    <div class="mb-6">
+                        <h4 class="text-md font-semibold text-green-800 mb-3">Transaction Summary</h4>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                                            Item
+                                        </th>
+                                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+                                            Amount
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200" id="summary-table-body">
+                                    <!-- Summary rows will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <p class="text-green-700 mb-4">
                         Your FreeAgent-compatible CSV has been generated. Click the button below to download it.
                     </p>
@@ -151,7 +174,7 @@
                 const transaction = {
                     payout_id: values[0]?.replace(/"/g, '') || '',
                     effective_at: values[2]?.replace(/"/g, '') || '',
-                    gross: values[5]?.replace(/"/g, '') || '',
+                    gross: values[4]?.replace(/"/g, '') || '',
                     trace_id: values[17]?.replace(/"/g, '') || ''
                 };
 
@@ -237,6 +260,46 @@
             return lines.join('\n');
         }
 
+        function generateSummary(csvContent) {
+            const lines = csvContent.split('\n');
+            const summary = {
+                sales: { count: 0, amount: 0 },
+                fees: { count: 0, amount: 0 },
+                refunds: { count: 0, amount: 0 },
+                transfers: { count: 0, amount: 0 },
+                stripe_debits: { count: 0, amount: 0 }
+            };
+
+            for (const line of lines) {
+                if (!line.trim()) continue;
+                
+                const values = parseCSVLine(line);
+                if (values.length < 3) continue;
+                
+                const amount = parseFloat(values[1]);
+                const description = values[2];
+                
+                if (description.startsWith('sale ')) {
+                    summary.sales.count++;
+                    summary.sales.amount += amount;
+                } else if (description.startsWith('fee ')) {
+                    summary.fees.count++;
+                    summary.fees.amount += amount;
+                } else if (description.startsWith('refund ')) {
+                    summary.refunds.count++;
+                    summary.refunds.amount += amount;
+                } else if (description.startsWith('transfer ')) {
+                    summary.transfers.count++;
+                    summary.transfers.amount += amount;
+                } else if (description.startsWith('stripe debit ')) {
+                    summary.stripe_debits.count++;
+                    summary.stripe_debits.amount += amount;
+                }
+            }
+
+            return summary;
+        }
+
         async function processCSVFiles(balanceFile, payoutsFile) {
             const balanceText = await balanceFile.text();
             const payoutsText = await payoutsFile.text();
@@ -259,6 +322,7 @@
         const downloadBtn = document.getElementById('download-btn');
 
         let csvResult = null;
+        let summaryResult = null;
 
         function updateProcessButton() {
             const balanceFile = balanceFileInput.files[0];
@@ -285,6 +349,7 @@
 
             try {
                 csvResult = await processCSVFiles(balanceFile, payoutsFile);
+                summaryResult = generateSummary(csvResult);
                 showResult();
             } catch (err) {
                 showError(err.message || 'An error occurred while processing files');
@@ -319,6 +384,53 @@
 
         function showResult() {
             resultDisplay.classList.remove('hidden');
+            
+            // Populate summary table
+            if (summaryResult) {
+                const tableBody = document.getElementById('summary-table-body');
+                tableBody.innerHTML = `
+                    <tr>
+                        <td class="px-4 py-2 text-sm text-gray-900">
+                            Number of sales (${summaryResult.sales.count})
+                        </td>
+                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                            £${summaryResult.sales.amount.toFixed(2)}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2 text-sm text-gray-900">
+                            Number of fees (${summaryResult.fees.count})
+                        </td>
+                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                            £${summaryResult.fees.amount.toFixed(2)}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2 text-sm text-gray-900">
+                            Number of refunds (${summaryResult.refunds.count})
+                        </td>
+                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                            £${summaryResult.refunds.amount.toFixed(2)}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2 text-sm text-gray-900">
+                            Number of transfer payouts (${summaryResult.transfers.count})
+                        </td>
+                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                            £${summaryResult.transfers.amount.toFixed(2)}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-2 text-sm text-gray-900">
+                            Number of stripe debits (${summaryResult.stripe_debits.count})
+                        </td>
+                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                            £${summaryResult.stripe_debits.amount.toFixed(2)}
+                        </td>
+                    </tr>
+                `;
+            }
         }
 
         function hideResult() {
