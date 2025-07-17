@@ -43,6 +43,15 @@ The generated CSV file contains exactly three columns:
 
 4. Open your browser and navigate to `http://localhost:5173`
 
+## Getting Reports from Stripe
+
+Before using this tool, you need to download the required CSV reports from your Stripe dashboard:
+
+1. **Go to Reports > Balance Summary**
+2. **Change dates to your financial year** (e.g., 2024-05-01 to 2025-04-30)
+3. **Download the full (all columns) "Balance change from Activity" Report**
+4. **Download the full (all columns) "Payouts" Report**
+
 ## Usage
 
 1. Upload your Stripe balance CSV file (itemised activity)
@@ -94,4 +103,4 @@ npm run preview
 
 ## Testing
 
-Open `test.html` in your browser to test the CSV parsing logic with sample data. 
+The `samples/` directory contains example CSV files for testing the application functionality. 

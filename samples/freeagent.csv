@@ -447,7 +447,7 @@
 03/07/2024,-0.35,fee | STRIPE-WFXSDPAJ | txn_3PYMfZGtEGgLrOja0Si2j3l9 | Outdoor Class East
 03/07/2024,30.00,sale | STRIPE-WFXSDPAJ | txn_3PYXaKGtEGgLrOja1bwhIlHI | Youth Class 6-9
 03/07/2024,-0.65,fee | STRIPE-WFXSDPAJ | txn_3PYXaKGtEGgLrOja1bwhIlHI | Youth Class 6-9
-03/07/2024,20.35,stripe debit | STRIPE-FKXO7MXBXHV | po_1PXaO1GtEGgLrOjaLZFzmJ7L
+03/07/2024,20.35,stripe direct debit | STRIPE-FKXO7MXBXHV | po_1PXaO1GtEGgLrOjaLZFzmJ7L
 04/07/2024,-321.01,transfer to bank account | STRIPE-CQXB9DRB | po_1PXwOyGtEGgLrOjavLDVBWQP
 05/07/2024,15.00,sale | STRIPE-XES7N8NE | txn_3PZFdGGtEGgLrOja0AL9Kx50 | Youth Class 6-9
 05/07/2024,-0.43,fee | STRIPE-XES7N8NE | txn_3PZFdGGtEGgLrOja0AL9Kx50 | Youth Class 6-9
@@ -1039,7 +1039,7 @@
 13/10/2024,15.00,sale | STRIPE-MIDM4E6G | txn_3Q9UZtGtEGgLrOja1XBvLPHg | Youth Class East 8-14
 13/10/2024,-0.43,fee | STRIPE-MIDM4E6G | txn_3Q9UZtGtEGgLrOja1XBvLPHg | Youth Class East 8-14
 14/10/2024,-15.00,refund | STRIPE-MIDM4E6G | txn_3Q52GCGtEGgLrOja02pRK3F5 | Youth Decathlon
-14/10/2024,30.00,stripe debit | STRIPE-FKXO7MXBXHV | po_1Q8EMsGtEGgLrOjamkPYhNH5
+14/10/2024,30.00,stripe direct debit | STRIPE-FKXO7MXBXHV | po_1Q8EMsGtEGgLrOjamkPYhNH5
 15/10/2024,-14.57,transfer to bank account | STRIPE-YY5GIKGE | po_1Q8XugGtEGgLrOjalMMBFbCU
 16/10/2024,-33.87,transfer to bank account | STRIPE-UYME7VVB | po_1Q9fzFGtEGgLrOjaHIJj5PXW
 17/10/2024,10.00,sale | STRIPE-A2NHR3EA | txn_3QApu6GtEGgLrOja0tQyu73a | Outdoor Class East
@@ -1355,7 +1355,7 @@
 09/12/2024,-19.50,transfer to bank account | STRIPE-KTAETTIY | po_1QTvngGtEGgLrOja0sbyQk5z
 10/12/2024,60.00,sale | STRIPE-S2GKMRWO | txn_3QUS68GtEGgLrOja0cFN40e2 | Private Booking
 10/12/2024,-1.10,fee | STRIPE-S2GKMRWO | txn_3QUS68GtEGgLrOja0cFN40e2 | Private Booking
-10/12/2024,20.00,stripe debit | STRIPE-FKXO7MXBXHV | po_1QUHKFGtEGgLrOjajXiylVIw
+10/12/2024,20.00,stripe direct debit | STRIPE-FKXO7MXBXHV | po_1QUHKFGtEGgLrOjajXiylVIw
 11/12/2024,60.00,sale | STRIPE-IGHYHC1Q | txn_3QUp0EGtEGgLrOja1EPWJjet | Private Booking
 11/12/2024,-1.10,fee | STRIPE-IGHYHC1Q | txn_3QUp0EGtEGgLrOja1EPWJjet | Private Booking
 11/12/2024,-38.60,transfer to bank account | STRIPE-MKZMCZHH | po_1QUdT5GtEGgLrOjajGQay19G
