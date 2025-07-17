@@ -201,7 +201,7 @@
                     freeagentTransactions.push({
                         date: dateStr,
                         amount: grossAmount.toFixed(2),
-                        description: `sale ${transaction.trace_id} ${transaction.balance_transaction_id} ${transaction.product_name}`
+                        					description: `sale | ${transaction.trace_id} | ${transaction.balance_transaction_id} | ${transaction.product_name}`
                     });
 
                     // Add fee transaction (negative amount)
@@ -209,15 +209,15 @@
                         freeagentTransactions.push({
                             date: dateStr,
                             amount: (-feeAmount).toFixed(2),
-                            description: `fee ${transaction.trace_id} ${transaction.balance_transaction_id} ${transaction.product_name}`
+                            						description: `fee | ${transaction.trace_id} | ${transaction.balance_transaction_id} | ${transaction.product_name}`
                         });
                     }
                 } else if (transaction.reporting_category === 'refund') {
-                    // Add refund transaction (negative amount)
+                    // Add refund transaction (negative amount - already negative in CSV)
                     freeagentTransactions.push({
                         date: dateStr,
-                        amount: (-grossAmount).toFixed(2),
-                        description: `refund ${transaction.trace_id} ${transaction.balance_transaction_id} ${transaction.product_name}`
+                        amount: grossAmount.toFixed(2),
+                        					description: `refund | ${transaction.trace_id} | ${transaction.balance_transaction_id} | ${transaction.product_name}`
                     });
                 }
             }
@@ -233,14 +233,14 @@
                     freeagentTransactions.push({
                         date: dateStr,
                         amount: (-grossAmount).toFixed(2),
-                        description: `transfer ${transaction.trace_id} ${transaction.payout_id}`
+                        					description: `transfer to bank account | ${transaction.trace_id} | ${transaction.payout_id}`
                     });
                 } else {
                     // Negative payout becomes positive stripe debit
                     freeagentTransactions.push({
                         date: dateStr,
                         amount: (-grossAmount).toFixed(2),
-                        description: `stripe debit ${transaction.trace_id} ${transaction.payout_id}`
+                        					description: `stripe direct debit | ${transaction.trace_id} | ${transaction.payout_id}`
                     });
                 }
             }

@@ -130,7 +130,7 @@ function transform_to_freeagent_format(
 			freeagent_transactions.push({
 				date: date_str,
 				amount: gross_amount.toFixed(2),
-				description: `sale ${transaction.trace_id} ${transaction.balance_transaction_id} ${transaction.product_name}`
+				description: `sale | ${transaction.trace_id} | ${transaction.balance_transaction_id} | ${transaction.product_name}`
 			});
 
 			// Add fee transaction (negative amount)
@@ -138,15 +138,15 @@ function transform_to_freeagent_format(
 				freeagent_transactions.push({
 					date: date_str,
 					amount: (-fee_amount).toFixed(2),
-					description: `fee ${transaction.trace_id} ${transaction.balance_transaction_id} ${transaction.product_name}`
+					description: `fee | ${transaction.trace_id} | ${transaction.balance_transaction_id} | ${transaction.product_name}`
 				});
 			}
 		} else if (transaction.reporting_category === 'refund') {
-			// Add refund transaction (negative amount)
+			// Add refund transaction (negative amount - already negative in CSV)
 			freeagent_transactions.push({
 				date: date_str,
-				amount: (-gross_amount).toFixed(2),
-				description: `refund ${transaction.trace_id} ${transaction.balance_transaction_id} ${transaction.product_name}`
+				amount: gross_amount.toFixed(2),
+				description: `refund | ${transaction.trace_id} | ${transaction.balance_transaction_id} | ${transaction.product_name}`
 			});
 		}
 	}
@@ -162,14 +162,14 @@ function transform_to_freeagent_format(
 			freeagent_transactions.push({
 				date: date_str,
 				amount: (-gross_amount).toFixed(2),
-				description: `transfer ${transaction.trace_id} ${transaction.payout_id}`
+				description: `transfer to bank account | ${transaction.trace_id} | ${transaction.payout_id}`
 			});
 		} else {
-			// Negative payout becomes positive stripe debit
+			// Negative payout becomes positive stripe direct debit
 			freeagent_transactions.push({
 				date: date_str,
 				amount: (-gross_amount).toFixed(2),
-				description: `stripe debit ${transaction.trace_id} ${transaction.payout_id}`
+				description: `stripe direct debit | ${transaction.trace_id} | ${transaction.payout_id}`
 			});
 		}
 	}
