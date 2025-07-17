@@ -416,6 +416,14 @@
                             £${summaryResult.refunds.amount.toFixed(2)}
                         </td>
                     </tr>
+                    <tr class="bg-blue-50 font-semibold">
+                        <td class="px-4 py-2 text-sm text-gray-900">
+                            Activity Change (Sales + Fees + Refunds)
+                        </td>
+                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                            £${(summaryResult.sales.amount + summaryResult.fees.amount + summaryResult.refunds.amount).toFixed(2)}
+                        </td>
+                    </tr>
                     <tr>
                         <td class="px-4 py-2 text-sm text-gray-900">
                             Number of transfer payouts (${summaryResult.transfers.count})
@@ -430,6 +438,14 @@
                         </td>
                         <td class="px-4 py-2 text-sm text-right text-gray-900">
                             £${summaryResult.stripe_debits.amount.toFixed(2)}
+                        </td>
+                    </tr>
+                    <tr class="bg-green-50 font-semibold">
+                        <td class="px-4 py-2 text-sm text-gray-900">
+                            Total Payouts (Payouts + Debits)
+                        </td>
+                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                            £${(summaryResult.transfers.amount + summaryResult.stripe_debits.amount).toFixed(2)}
                         </td>
                     </tr>
                     <tr class="bg-gray-50 font-semibold">
