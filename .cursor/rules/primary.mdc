@@ -1,0 +1,35 @@
+---
+alwaysApply: true
+description: Primary Context
+---
+
+[description]
+description = "The main purpose is to solve my bookkeeping. I want to automate the entire process. My current setup is a stripe account that my customers use to purchase things. Stripe take their fee and percentage and then after 4 or 5 days will pay my bank account (Lloyds bank uk). I want a saas that allows AI to reconcile the stripe incoming, fees and payouts with the bank incoming and expenditures. I want a result that I can use in FreeAgent to auto-reconcile everything and I don't have to do anything. I want FreeAgent to be able to then send my company Tax filing."
+
+[project]
+summary = "AI-powered SaaS for automating bookkeeping using Stripe and bank CSVs, exporting to FreeAgent."
+
+[code]
+naming_convention = "snake_case"
+naming_style = "verbose"  # No abbreviations in function or variable names
+architecture = "MVC"
+test_folder = "test"
+
+[context]
+ignore_paths = ["node_modules"]
+
+[ai]
+allowed_scope = "full"
+focus = "general"
+usage = ["writing", "refactoring", "debugging", "tests", "UI"]
+
+[team]
+collaboration = "solo"
+
+[download_csv]
+The download CSV MUST Absolutely only have three columns to be FreeAgent compatible.
+1. The date in DD/MM/YYYY
+2. The amount. Negative for deductions. Positive for additions.
+3. Description.  This should be a complete description of the transaction or payout.
+
+The file should be in chronological order and display a line for each payout and a line for every transaction and a line for every fee. 
