@@ -267,7 +267,8 @@
                 fees: { count: 0, amount: 0 },
                 refunds: { count: 0, amount: 0 },
                 transfers: { count: 0, amount: 0 },
-                stripe_debits: { count: 0, amount: 0 }
+                stripe_debits: { count: 0, amount: 0 },
+                total_lines: 0
             };
 
             for (const line of lines) {
@@ -278,6 +279,8 @@
                 
                 const amount = parseFloat(values[1]);
                 const description = values[2];
+                
+                summary.total_lines++;
                 
                 if (description.startsWith('sale ')) {
                     summary.sales.count++;
@@ -291,7 +294,7 @@
                 } else if (description.startsWith('transfer ')) {
                     summary.transfers.count++;
                     summary.transfers.amount += amount;
-                } else if (description.startsWith('stripe debit ')) {
+                } else if (description.startsWith('stripe direct debit ')) {
                     summary.stripe_debits.count++;
                     summary.stripe_debits.amount += amount;
                 }
@@ -423,10 +426,18 @@
                     </tr>
                     <tr>
                         <td class="px-4 py-2 text-sm text-gray-900">
-                            Number of stripe debits (${summaryResult.stripe_debits.count})
+                            Number of stripe direct debits (${summaryResult.stripe_debits.count})
                         </td>
                         <td class="px-4 py-2 text-sm text-right text-gray-900">
                             £${summaryResult.stripe_debits.amount.toFixed(2)}
+                        </td>
+                    </tr>
+                    <tr class="bg-gray-50 font-semibold">
+                        <td class="px-4 py-2 text-sm text-gray-900">
+                            Total number of lines (${summaryResult.total_lines})
+                        </td>
+                        <td class="px-4 py-2 text-sm text-right text-gray-900">
+                            -
                         </td>
                     </tr>
                 `;
