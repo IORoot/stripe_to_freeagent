@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Reconciler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">
+                Stripe Reconciler
+            </h1>
+            
+            <p class="text-gray-600 mb-8 text-center">
+                Upload your Stripe balance and payouts CSV files to generate a FreeAgent-compatible reconciliation file.
+            </p>
+
+            <div class="space-y-6">
+                <!-- File Upload Section -->
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label for="balance-file" class="block text-sm font-medium text-gray-700">
+                            Stripe Balance CSV File
+                        </label>
+                        <input
+                            id="balance-file"
+                            type="file"
+                            accept=".csv"
+                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        />
+                        <p class="text-xs text-gray-500">
+                            Select the Stripe balance itemised activity CSV file
+                        </p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="payouts-file" class="block text-sm font-medium text-gray-700">
+                            Stripe Payouts CSV File
+                        </label>
+                        <input
+                            id="payouts-file"
+                            type="file"
+                            accept=".csv"
+                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        />
+                        <p class="text-xs text-gray-500">
+                            Select the Stripe payouts CSV file
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Process Button -->
+                <div class="flex justify-center">
+                    <button
+                        id="process-btn"
+                        class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        Process Files
+                    </button>
+                </div>
+
+                <!-- Error Display -->
+                <div id="error-display" class="hidden bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p id="error-text" class="text-red-800"></p>
+                </div>
+
+                <!-- Result Display -->
+                <div id="result-display" class="hidden bg-green-50 border border-green-200 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-green-800 mb-4">
+                        Processing Complete!
+                    </h3>
+                    <p class="text-green-700 mb-4">
+                        Your FreeAgent-compatible CSV has been generated. Click the button below to download it.
+                    </p>
+                    <button
+                        id="download-btn"
+                        class="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                        Download freeagent.csv
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CSV Processing Logic
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current);
+            return result;
+        }
+
+        function parseBalanceCSV(csvText) {
+            const lines = csvText.split('\n');
+            const transactions = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                const values = parseCSVLine(line);
+                if (values.length < 15) continue;
+
+                const transaction = {
+                    balance_transaction_id: values[0]?.replace(/"/g, '') || '',
+                    created: values[2]?.replace(/"/g, '') || '',
+                    gross: values[6]?.replace(/"/g, '') || '',
+                    fee: values[7]?.replace(/"/g, '') || '',
+                    reporting_category: values[9]?.replace(/"/g, '') || '',
+                    trace_id: values[14]?.replace(/"/g, '') || '',
+                    description: values[11]?.replace(/"/g, '') || '',
+                    product_name: values[64]?.replace(/"/g, '') || ''
+                };
+
+                transactions.push(transaction);
+            }
+
+            return transactions;
+        }
+
+        function parsePayoutsCSV(csvText) {
+            const lines = csvText.split('\n');
+            const transactions = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+
+                const values = parseCSVLine(line);
+                if (values.length < 18) continue;
+
+                const transaction = {
+                    payout_id: values[0]?.replace(/"/g, '') || '',
+                    effective_at: values[2]?.replace(/"/g, '') || '',
+                    gross: values[5]?.replace(/"/g, '') || '',
+                    trace_id: values[17]?.replace(/"/g, '') || ''
+                };
+
+                transactions.push(transaction);
+            }
+
+            return transactions;
+        }
+
+        function transformToFreeAgentFormat(balanceTransactions, payoutTransactions) {
+            const freeagentTransactions = [];
+
+            // Process balance transactions
+            for (const transaction of balanceTransactions) {
+                const grossAmount = parseFloat(transaction.gross);
+                const feeAmount = parseFloat(transaction.fee);
+                const createdDate = new Date(transaction.created);
+
+                // Format date as DD/MM/YYYY
+                const dateStr = createdDate.toLocaleDateString('en-GB');
+
+                // Add sale transaction (positive amount)
+                if (transaction.reporting_category === 'charge') {
+                    freeagentTransactions.push({
+                        date: dateStr,
+                        amount: grossAmount.toFixed(2),
+                        description: `sale ${transaction.trace_id} ${transaction.balance_transaction_id} ${transaction.product_name}`
+                    });
+
+                    // Add fee transaction (negative amount)
+                    if (feeAmount > 0) {
+                        freeagentTransactions.push({
+                            date: dateStr,
+                            amount: (-feeAmount).toFixed(2),
+                            description: `fee ${transaction.trace_id} ${transaction.balance_transaction_id} ${transaction.product_name}`
+                        });
+                    }
+                } else if (transaction.reporting_category === 'refund') {
+                    // Add refund transaction (negative amount)
+                    freeagentTransactions.push({
+                        date: dateStr,
+                        amount: (-grossAmount).toFixed(2),
+                        description: `refund ${transaction.trace_id} ${transaction.balance_transaction_id} ${transaction.product_name}`
+                    });
+                }
+            }
+
+            // Process payout transactions
+            for (const transaction of payoutTransactions) {
+                const grossAmount = parseFloat(transaction.gross);
+                const effectiveDate = new Date(transaction.effective_at);
+                const dateStr = effectiveDate.toLocaleDateString('en-GB');
+
+                if (grossAmount > 0) {
+                    // Positive payout becomes negative transfer
+                    freeagentTransactions.push({
+                        date: dateStr,
+                        amount: (-grossAmount).toFixed(2),
+                        description: `transfer ${transaction.trace_id} ${transaction.payout_id}`
+                    });
+                } else {
+                    // Negative payout becomes positive stripe debit
+                    freeagentTransactions.push({
+                        date: dateStr,
+                        amount: (-grossAmount).toFixed(2),
+                        description: `stripe debit ${transaction.trace_id} ${transaction.payout_id}`
+                    });
+                }
+            }
+
+            // Sort by date
+            freeagentTransactions.sort((a, b) => {
+                const dateA = new Date(a.date.split('/').reverse().join('-'));
+                const dateB = new Date(b.date.split('/').reverse().join('-'));
+                return dateA.getTime() - dateB.getTime();
+            });
+
+            return freeagentTransactions;
+        }
+
+        function generateFreeAgentCSV(transactions) {
+            const lines = transactions.map(t => `${t.date},${t.amount},${t.description}`);
+            return lines.join('\n');
+        }
+
+        async function processCSVFiles(balanceFile, payoutsFile) {
+            const balanceText = await balanceFile.text();
+            const payoutsText = await payoutsFile.text();
+
+            const balanceTransactions = parseBalanceCSV(balanceText);
+            const payoutTransactions = parsePayoutsCSV(payoutsText);
+
+            const freeagentTransactions = transformToFreeAgentFormat(balanceTransactions, payoutTransactions);
+
+            return generateFreeAgentCSV(freeagentTransactions);
+        }
+
+        // UI Event Handlers
+        const balanceFileInput = document.getElementById('balance-file');
+        const payoutsFileInput = document.getElementById('payouts-file');
+        const processBtn = document.getElementById('process-btn');
+        const errorDisplay = document.getElementById('error-display');
+        const errorText = document.getElementById('error-text');
+        const resultDisplay = document.getElementById('result-display');
+        const downloadBtn = document.getElementById('download-btn');
+
+        let csvResult = null;
+
+        function updateProcessButton() {
+            const balanceFile = balanceFileInput.files[0];
+            const payoutsFile = payoutsFileInput.files[0];
+            processBtn.disabled = !balanceFile || !payoutsFile;
+        }
+
+        balanceFileInput.addEventListener('change', updateProcessButton);
+        payoutsFileInput.addEventListener('change', updateProcessButton);
+
+        processBtn.addEventListener('click', async () => {
+            const balanceFile = balanceFileInput.files[0];
+            const payoutsFile = payoutsFileInput.files[0];
+
+            if (!balanceFile || !payoutsFile) {
+                showError('Please select both balance and payouts files');
+                return;
+            }
+
+            processBtn.disabled = true;
+            processBtn.textContent = 'Processing...';
+            hideError();
+            hideResult();
+
+            try {
+                csvResult = await processCSVFiles(balanceFile, payoutsFile);
+                showResult();
+            } catch (err) {
+                showError(err.message || 'An error occurred while processing files');
+            } finally {
+                processBtn.disabled = false;
+                processBtn.textContent = 'Process Files';
+            }
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            if (!csvResult) return;
+
+            const blob = new Blob([csvResult], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'freeagent.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        function showError(message) {
+            errorText.textContent = message;
+            errorDisplay.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorDisplay.classList.add('hidden');
+        }
+
+        function showResult() {
+            resultDisplay.classList.remove('hidden');
+        }
+
+        function hideResult() {
+            resultDisplay.classList.add('hidden');
+        }
+
+        // Initialize
+        updateProcessButton();
+    </script>
+</body>
+</html> 

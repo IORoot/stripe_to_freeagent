@@ -7,7 +7,24 @@ description: Primary Context
 description = "The main purpose is to solve my bookkeeping. I want to automate the entire process. My current setup is a stripe account that my customers use to purchase things. Stripe take their fee and percentage and then after 4 or 5 days will pay my bank account (Lloyds bank uk). I want a saas that allows AI to reconcile the stripe incoming, fees and payouts with the bank incoming and expenditures. I want a result that I can use in FreeAgent to auto-reconcile everything and I don't have to do anything. I want FreeAgent to be able to then send my company Tax filing."
 
 [project]
-summary = "AI-powered SaaS for automating bookkeeping using Stripe and bank CSVs, exporting to FreeAgent."
+I would like you to build a sveltekit saas that uses tailwind css. The saas will take two CSV files with different columns and combine them into a single CSV. The first file, a sample of which is in ./samples/STRIPE_BALANCE_Itemised_balance_change_from_activity_GBP_2024-05-01_to_2025-04-30_Europe-London.csv I would like to combine with the ./samples/STRIPE_PAYOUTS_Itemised_payouts_GBP_2024-05-01_to_2025-04-30_Europe-London.csv file. The output should be a export freeagent.csv file with three columns:
+1. date in dd/mm/yyyy
+2. amount.
+3. decsription.
+There should NOT be a header line in the export output file.
+
+The Stripe balance file contains a line for each sale gross amount and its fee. I'd like a line for each sale gross amount (sale) and another line for the fee converted from positive to a negative amount (fee). If the 'reporting_category' is a 'refund' then the category should be 'refund'
+The description from this file should be a combination of :
+1. Category (sale or fee or refund)
+2. Trace_id
+3. balance_transaction_id
+
+The stripe payout file contains a line for each payout or debit. If the gross amount from this file is positive label it as a "transfer" and make it a negative value. If its a negative it should be labelled as a "stripe debit" and made a positive amount. Effectively all the gross values should be inversed. The description should be a combo of:
+1. Category (transfer | stripe debit)
+2. Trace_id
+3. payout_id
+
+Any questions, please ask.
 
 [code]
 naming_convention = "snake_case"

@@ -1,131 +1,97 @@
-# CSV Regex Reconciler
+# Stripe Reconciler
 
-An AI-powered SaaS application for processing CSV files with regex pattern matching, designed for bookkeeping automation and FreeAgent integration.
+A SvelteKit SaaS application that processes Stripe CSV files and generates FreeAgent-compatible reconciliation data.
 
 ## Features
 
-- **CSV Upload**: Drag and drop or file picker for CSV file upload
-- **Regex Pattern Matching**: Add, edit, and manage multiple regex patterns
-- **Real-time Filtering**: See filtered results as you modify patterns
-- **Column Selection**: Choose which column to apply regex patterns to
-- **Data Preview**: Paginated table view of filtered results
-- **Export Options**: 
-  - Standard CSV export with all columns
-  - FreeAgent-compatible export (Date, Amount, Description format)
-- **Modern UI**: Built with SvelteKit and Tailwind CSS
+- Upload Stripe balance and payouts CSV files
+- Process and transform data according to FreeAgent requirements
+- Generate a downloadable CSV file with three columns: date, amount, and description
+- Modern, responsive UI built with Tailwind CSS
 
-## Getting Started
+## Data Processing Rules
 
-### Prerequisites
+### Stripe Balance File Processing
+- **Sales**: Creates a positive line for each sale gross amount
+- **Fees**: Creates a negative line for each fee amount
+- **Refunds**: Creates a negative line for refund amounts
+- **Description Format**: `{category} {trace_id} {balance_transaction_id}`
 
-- Node.js (version 16 or higher)
-- npm or yarn
+### Stripe Payouts File Processing
+- **Positive Payouts**: Converts to negative "transfer" amounts
+- **Negative Payouts**: Converts to positive "stripe debit" amounts
+- **Description Format**: `{category} {trace_id} {payout_id}`
 
-### Installation
+### Output Format
+The generated CSV file contains exactly three columns:
+1. **Date**: DD/MM/YYYY format
+2. **Amount**: Positive for additions, negative for deductions
+3. **Description**: Complete transaction description
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd csv-reconciler
-```
+## Installation
 
+1. Clone the repository
 2. Install dependencies:
-```bash
-npm install
-```
+   ```bash
+   npm install
+   ```
 
 3. Start the development server:
-```bash
-npm run dev
-```
+   ```bash
+   npm run dev
+   ```
 
 4. Open your browser and navigate to `http://localhost:5173`
 
 ## Usage
 
-### Uploading CSV Files
+1. Upload your Stripe balance CSV file (itemised activity)
+2. Upload your Stripe payouts CSV file
+3. Click "Process Files" to generate the FreeAgent-compatible CSV
+4. Download the generated `freeagent.csv` file
 
-1. Click "Choose CSV file" or drag and drop a CSV file onto the upload area
-2. The application will automatically parse the CSV and display the column headers
-3. Select which column you want to apply regex patterns to
+## Sample Files
 
-### Managing Regex Patterns
+The `samples/` directory contains example CSV files for testing:
+- `STRIPE_BALANCE_Itemised_balance_change_from_activity_GBP_2024-05-01_to_2025-04-30_Europe-London.csv`
+- `STRIPE_PAYOUTS_Itemised_payouts_GBP_2024-05-01_to_2025-04-30_Europe-London.csv`
 
-1. **Add Patterns**: Enter a regex pattern and optional description, then click "Add Pattern"
-2. **Edit Patterns**: Click the "Edit" button next to any pattern to modify it
-3. **Enable/Disable**: Use the checkbox to enable or disable patterns
-4. **Delete Patterns**: Click the "Delete" button to remove patterns
+## Technical Details
 
-### Regex Tips
+- **Framework**: SvelteKit
+- **Styling**: Tailwind CSS
+- **Language**: TypeScript
+- **File Processing**: Client-side CSV parsing and transformation
 
-- Use `STRIPE` to match Stripe transactions
-- Use `Sale|Fee` to match multiple terms (OR operator)
-- Use `^Sale` to match text that starts with "Sale"
-- Use `\.com$` to match text that ends with ".com"
-- Use `\d+` to match one or more digits
-- Use `[A-Z]+` to match uppercase letters
+## CSV Format Requirements
 
-### Exporting Data
+### Input Files
+- **Balance File**: Must contain columns for balance_transaction_id, created, gross, fee, reporting_category, trace_id, and description
+- **Payouts File**: Must contain columns for payout_id, effective_at, gross, and trace_id
 
-1. **Standard CSV**: Downloads all filtered data with original column structure
-2. **FreeAgent CSV**: Downloads data in FreeAgent-compatible format:
-   - Date (DD/MM/YYYY format)
-   - Amount (negative for deductions, positive for additions)
-   - Description (complete transaction description)
-
-## FreeAgent Integration
-
-The application is specifically designed to work with FreeAgent accounting software. The FreeAgent export format ensures:
-
-- Only three columns as required by FreeAgent
-- Proper date formatting
-- Correct amount formatting (negative for deductions)
-- Complete transaction descriptions
-
-## Sample Data
-
-The application comes with sample CSV files in the `samples/` directory:
-- `freeagent_stripe_transactions.csv` - Stripe transaction data
-- `lloyds_transactions_37208468_20255406_0207.csv` - Bank transaction data
-- `STRIPE_BALANCE_*.csv` - Stripe balance data
-- `STRIPE_PAYOUTS_*.csv` - Stripe payout data
+### Output File
+- No header row
+- Three columns: date, amount, description
+- Chronologically sorted by date
+- FreeAgent-compatible format
 
 ## Development
 
-### Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run check` - Type check
-- `npm run lint` - Lint code
-- `npm run format` - Format code
-
-### Project Structure
-
-```
-src/
-├── app.css              # Global styles with Tailwind
-├── app.html             # HTML template
-├── lib/
-│   └── components/      # Svelte components
-│       ├── CsvUploader.svelte
-│       ├── RegexPatternManager.svelte
-│       ├── CsvPreview.svelte
-│       └── CsvExporter.svelte
-└── routes/
-    ├── +layout.svelte   # Root layout
-    └── +page.svelte     # Main page
+To run the development server:
+```bash
+npm run dev
 ```
 
-## Technologies Used
+To build for production:
+```bash
+npm run build
+```
 
-- **SvelteKit**: Full-stack web framework
-- **TypeScript**: Type-safe JavaScript
-- **Tailwind CSS**: Utility-first CSS framework
-- **PapaParse**: CSV parsing library
-- **Vite**: Build tool and dev server
+To preview the production build:
+```bash
+npm run preview
+```
 
-## License
+## Testing
 
-This project is licensed under the MIT License. 
+Open `test.html` in your browser to test the CSV parsing logic with sample data. 

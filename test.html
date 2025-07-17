@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Processor Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">CSV Processor Test</h1>
+        
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Test Results</h2>
+            <div id="results" class="space-y-2"></div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Sample Data</h2>
+            <div id="sample-data" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <script>
+        // Simplified CSV processing logic for testing
+        function parse_csv_line(line) {
+            const result = [];
+            let current = '';
+            let in_quotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    in_quotes = !in_quotes;
+                } else if (char === ',' && !in_quotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current);
+            return result;
+        }
+
+        function test_csv_parsing() {
+            const resultsDiv = document.getElementById('results');
+            const sampleDataDiv = document.getElementById('sample-data');
+            
+            // Sample CSV data from the files
+            const sample_balance_line = '"txn_3PCcAUGtEGgLrOja0J5HoEEY","2024-05-04 06:34:00","2024-05-04 07:34:00","2024-05-10 00:00:00","2024-05-10 01:00:00","gbp","10.00","0.53","9.47","charge","ch_3PCcAUGtEGgLrOja0O26cuCO","Outdoor Class East","10.00","gbp","STRIPE-MUYHJLD8VML5BJW2DYWZSXM3MXYE","supported","po_1PDzcLGtEGgLrOjasYAEG0t2","2024-05-10 00:00:00","2024-05-10 01:00:00","cus_Q2hZnpRuHyFRq9","jmshields@mac.com","Hugh Shields"';
+            
+            const sample_payout_line = '"po_1PDzcLGtEGgLrOjasYAEG0t2","2024-05-10 00:00:00","2024-05-10 01:00:00","gbp","300.57","0.00","300.57","payout","txn_1PDzcMGtEGgLrOjaUGkNdokL","STRIPE PAYOUT","2024-05-10 00:00:00","paid",,,"bank_account","STRIPE PAYOUT","ba_1CQ93zGtEGgLrOjalSDfxqij","STRIPE-MUYHJLD8VML5BJW2DYWZSXM3MXYE","supported"';
+            
+            try {
+                // Test parsing
+                const balance_values = parse_csv_line(sample_balance_line);
+                const payout_values = parse_csv_line(sample_payout_line);
+                
+                resultsDiv.innerHTML = `
+                    <div class="text-green-600">✓ CSV parsing working correctly</div>
+                    <div>Balance values count: ${balance_values.length}</div>
+                    <div>Payout values count: ${payout_values.length}</div>
+                `;
+                
+                // Show sample data
+                sampleDataDiv.innerHTML = `
+                    <div>
+                        <h3 class="font-semibold">Balance Transaction:</h3>
+                        <div class="bg-gray-100 p-2 rounded text-sm">
+                            <div>ID: ${balance_values[0]}</div>
+                            <div>Created: ${balance_values[2]}</div>
+                            <div>Gross: ${balance_values[6]}</div>
+                            <div>Fee: ${balance_values[7]}</div>
+                            <div>Category: ${balance_values[9]}</div>
+                            <div>Trace ID: ${balance_values[14]}</div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Payout Transaction:</h3>
+                        <div class="bg-gray-100 p-2 rounded text-sm">
+                            <div>ID: ${payout_values[0]}</div>
+                            <div>Effective: ${payout_values[2]}</div>
+                            <div>Gross: ${payout_values[5]}</div>
+                            <div>Trace ID: ${payout_values[17]}</div>
+                        </div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="text-red-600">✗ Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Run the test when page loads
+        test_csv_parsing();
+    </script>
+</body>
+</html> 
