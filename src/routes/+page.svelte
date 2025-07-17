@@ -7,6 +7,7 @@
 	let result = null;
 	let error = null;
 	let summary = null;
+	let starting_balance = 0;
 
 	async function handle_file_upload() {
 		if (!balance_file || !payouts_file || balance_file.length === 0 || payouts_file.length === 0) {
@@ -188,6 +189,23 @@
 							Processing Complete!
 						</h3>
 						
+						<!-- Starting Balance Input -->
+						<div class="mb-6">
+							<label for="starting-balance" class="block text-sm font-medium text-gray-700 mb-2">
+								Starting Balance
+							</label>
+							<div class="flex justify-end">
+								<input
+									id="starting-balance"
+									type="number"
+									step="0.01"
+									bind:value={starting_balance}
+									class="block w-32 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-right"
+									placeholder="0.00"
+								/>
+							</div>
+						</div>
+						
 						<!-- Summary Table -->
 						<div class="mb-6">
 							<h4 class="text-md font-semibold text-green-800 mb-3">Transaction Summary</h4>
@@ -266,6 +284,14 @@
 											</td>
 											<td class="px-4 py-2 text-sm text-right text-gray-900">
 												£{((summary.sales.amount + summary.fees.amount + summary.refunds.amount) + (summary.transfers.amount + summary.stripe_debits.amount)).toFixed(2)}
+											</td>
+										</tr>
+										<tr class="bg-orange-50 font-semibold">
+											<td class="px-4 py-2 text-sm text-gray-900">
+												Offset End Balance (Starting Balance + Ending Balance)
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												£{(starting_balance + ((summary.sales.amount + summary.fees.amount + summary.refunds.amount) + (summary.transfers.amount + summary.stripe_debits.amount))).toFixed(2)}
 											</td>
 										</tr>
 										<tr class="bg-gray-50 font-semibold">
