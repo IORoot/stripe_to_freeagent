@@ -260,6 +260,14 @@
 												£{(summary.transfers.amount + summary.stripe_debits.amount).toFixed(2)}
 											</td>
 										</tr>
+										<tr class="bg-purple-50 font-semibold">
+											<td class="px-4 py-2 text-sm text-gray-900">
+												Ending Balance (Activity Change + Total Payouts)
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												£{((summary.sales.amount + summary.fees.amount + summary.refunds.amount) + (summary.transfers.amount + summary.stripe_debits.amount)).toFixed(2)}
+											</td>
+										</tr>
 										<tr class="bg-gray-50 font-semibold">
 											<td class="px-4 py-2 text-sm text-gray-900">
 												Total number of lines ({summary.total_lines})
