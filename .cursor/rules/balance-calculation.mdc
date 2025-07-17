@@ -1,0 +1,13 @@
+---
+alwaysApply: false
+---
+
+[example]
+Amounts
+1. starting balance: £477.26
+2. Sales: £16715.00
+3. Refunds: £-265.00
+4. Fees: £-441.22
+
+Steps
+1. Sales + Refunds + Fees: 16008.78
