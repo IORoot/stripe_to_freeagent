@@ -41,7 +41,10 @@
 			refunds: { count: 0, amount: 0 },
 			transfers: { count: 0, amount: 0 },
 			stripe_debits: { count: 0, amount: 0 },
-			total_lines: 0
+			total_transactions: 0,
+			charges_gross: 0,
+			charges_fees: 0,
+			refunds_gross: 0
 		};
 
 		for (const line of lines) {
@@ -53,21 +56,23 @@
 			const amount = parseFloat(values[1]);
 			const description = values[2];
 			
-			summary.total_lines++;
-			
-			if (description.startsWith('sale ')) {
+			if (description.startsWith('sale |')) {
 				summary.sales.count++;
 				summary.sales.amount += amount;
-			} else if (description.startsWith('fee ')) {
+				summary.total_transactions++;
+				summary.charges_gross += amount;
+			} else if (description.startsWith('fee |')) {
 				summary.fees.count++;
 				summary.fees.amount += amount;
-			} else if (description.startsWith('refund ')) {
+				summary.charges_fees += amount;
+			} else if (description.startsWith('refund |')) {
 				summary.refunds.count++;
 				summary.refunds.amount += amount;
-			} else if (description.startsWith('transfer ')) {
+				summary.refunds_gross += amount;
+			} else if (description.startsWith('transfer to bank account |')) {
 				summary.transfers.count++;
 				summary.transfers.amount += amount;
-			} else if (description.startsWith('stripe direct debit ')) {
+			} else if (description.startsWith('stripe direct debit |')) {
 				summary.stripe_debits.count++;
 				summary.stripe_debits.amount += amount;
 			}
@@ -206,9 +211,9 @@
 							</div>
 						</div>
 						
-						<!-- Summary Table -->
+						<!-- Activity Summary Table -->
 						<div class="mb-6">
-							<h4 class="text-md font-semibold text-green-800 mb-3">Transaction Summary</h4>
+							<h4 class="text-md font-semibold text-green-800 mb-3">Activity Summary</h4>
 							<div class="overflow-x-auto">
 								<table class="min-w-full bg-white border border-gray-200 rounded-lg">
 									<thead class="bg-gray-50">
@@ -224,7 +229,7 @@
 									<tbody class="divide-y divide-gray-200">
 										<tr>
 											<td class="px-4 py-2 text-sm text-gray-900">
-												Number of sales ({summary.sales.count})
+												Number of Sales ({summary.sales.count})
 											</td>
 											<td class="px-4 py-2 text-sm text-right text-gray-900">
 												£{summary.sales.amount.toFixed(2)}
@@ -238,22 +243,35 @@
 												£{summary.fees.amount.toFixed(2)}
 											</td>
 										</tr>
+										<tr class="bg-yellow-50 font-semibold">
+											<td class="px-4 py-2 text-sm text-gray-900">
+												Net balance change from activity (Sales + Fees)
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												£{(summary.sales.amount + summary.fees.amount).toFixed(2)}
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+						<!-- Payout Summary Table -->
+						<div class="mb-6">
+							<h4 class="text-md font-semibold text-blue-800 mb-3">Payout Summary</h4>
+							<div class="overflow-x-auto">
+								<table class="min-w-full bg-white border border-gray-200 rounded-lg">
+									<thead class="bg-gray-50">
 										<tr>
-											<td class="px-4 py-2 text-sm text-gray-900">
-												Number of refunds ({summary.refunds.count})
-											</td>
-											<td class="px-4 py-2 text-sm text-right text-gray-900">
-												£{summary.refunds.amount.toFixed(2)}
-											</td>
+											<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+												Item
+											</th>
+											<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+												Amount
+											</th>
 										</tr>
-										<tr class="bg-blue-50 font-semibold">
-											<td class="px-4 py-2 text-sm text-gray-900">
-												Activity Change (Sales + Fees + Refunds)
-											</td>
-											<td class="px-4 py-2 text-sm text-right text-gray-900">
-												£{(summary.sales.amount + summary.fees.amount + summary.refunds.amount).toFixed(2)}
-											</td>
-										</tr>
+									</thead>
+									<tbody class="divide-y divide-gray-200">
 										<tr>
 											<td class="px-4 py-2 text-sm text-gray-900">
 												Number of transfer payouts ({summary.transfers.count})
@@ -278,28 +296,134 @@
 												£{(summary.transfers.amount + summary.stripe_debits.amount).toFixed(2)}
 											</td>
 										</tr>
-										<tr class="bg-purple-50 font-semibold">
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+						<!-- Balance Change Table -->
+						<div class="mb-6">
+							<h4 class="text-md font-semibold text-purple-800 mb-3">Balance Change</h4>
+							<div class="overflow-x-auto">
+								<table class="min-w-full bg-white border border-gray-200 rounded-lg">
+									<thead class="bg-gray-50">
+										<tr>
+											<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+												Item
+											</th>
+											<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+												Amount
+											</th>
+										</tr>
+									</thead>
+									<tbody class="divide-y divide-gray-200">
+										<tr>
 											<td class="px-4 py-2 text-sm text-gray-900">
-												Ending Balance (Activity Change + Total Payouts)
+												Count of transactions ({summary.total_transactions})
 											</td>
 											<td class="px-4 py-2 text-sm text-right text-gray-900">
-												£{((summary.sales.amount + summary.fees.amount + summary.refunds.amount) + (summary.transfers.amount + summary.stripe_debits.amount)).toFixed(2)}
+												-
+											</td>
+										</tr>
+										<tr>
+											<td class="px-4 py-2 text-sm text-gray-900">
+												Charges Gross amount
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												£{summary.charges_gross.toFixed(2)}
+											</td>
+										</tr>
+										<tr>
+											<td class="px-4 py-2 text-sm text-gray-900">
+												Charges Fees
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												£{summary.charges_fees.toFixed(2)}
+											</td>
+										</tr>
+										<tr>
+											<td class="px-4 py-2 text-sm text-gray-900">
+												Refunds Count ({summary.refunds.count})
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												-
+											</td>
+										</tr>
+										<tr>
+											<td class="px-4 py-2 text-sm text-gray-900">
+												Refunds Gross amount
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												£{summary.refunds_gross.toFixed(2)}
+											</td>
+										</tr>
+										<tr>
+											<td class="px-4 py-2 text-sm text-gray-900">
+												Balance Change from Activity count ({summary.total_transactions + summary.refunds.count})
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												-
+											</td>
+										</tr>
+										<tr class="bg-blue-50 font-semibold">
+											<td class="px-4 py-2 text-sm text-gray-900">
+												Balance Change from Activity
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												£{(summary.charges_gross + summary.charges_fees + summary.refunds_gross).toFixed(2)}
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+						<!-- Ending Balance Table -->
+						<div class="mb-6">
+							<h4 class="text-md font-semibold text-orange-800 mb-3">Ending Balance</h4>
+							<div class="overflow-x-auto">
+								<table class="min-w-full bg-white border border-gray-200 rounded-lg">
+									<thead class="bg-gray-50">
+										<tr>
+											<th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+												Item
+											</th>
+											<th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b">
+												Amount
+											</th>
+										</tr>
+									</thead>
+									<tbody class="divide-y divide-gray-200">
+										<tr>
+											<td class="px-4 py-2 text-sm text-gray-900">
+												Starting Balance
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												£{starting_balance.toFixed(2)}
+											</td>
+										</tr>
+										<tr>
+											<td class="px-4 py-2 text-sm text-gray-900">
+												The Net Balance change from activity
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												£{(summary.sales.amount + summary.fees.amount).toFixed(2)}
+											</td>
+										</tr>
+										<tr>
+											<td class="px-4 py-2 text-sm text-gray-900">
+												The Total Payouts
+											</td>
+											<td class="px-4 py-2 text-sm text-right text-gray-900">
+												£{(summary.transfers.amount + summary.stripe_debits.amount).toFixed(2)}
 											</td>
 										</tr>
 										<tr class="bg-orange-50 font-semibold">
 											<td class="px-4 py-2 text-sm text-gray-900">
-												Offset End Balance (Starting Balance + Ending Balance)
+												Ending Balance (Starting Balance + Net Balance change from activity + Total Payouts)
 											</td>
 											<td class="px-4 py-2 text-sm text-right text-gray-900">
-												£{(starting_balance + ((summary.sales.amount + summary.fees.amount + summary.refunds.amount) + (summary.transfers.amount + summary.stripe_debits.amount))).toFixed(2)}
-											</td>
-										</tr>
-										<tr class="bg-gray-50 font-semibold">
-											<td class="px-4 py-2 text-sm text-gray-900">
-												Total number of lines ({summary.total_lines})
-											</td>
-											<td class="px-4 py-2 text-sm text-right text-gray-900">
-												-
+												£{(starting_balance + (summary.sales.amount + summary.fees.amount) + (summary.transfers.amount + summary.stripe_debits.amount)).toFixed(2)}
 											</td>
 										</tr>
 									</tbody>

@@ -48,13 +48,13 @@ function parse_balance_csv(csv_text: string): BalanceTransaction[] {
 
 		const transaction: BalanceTransaction = {
 			balance_transaction_id: values[0]?.replace(/"/g, '') || '',
-			created: values[2]?.replace(/"/g, '') || '',
-			gross: values[6]?.replace(/"/g, '') || '',
-			fee: values[7]?.replace(/"/g, '') || '',
-			reporting_category: values[9]?.replace(/"/g, '') || '',
-			trace_id: values[14]?.replace(/"/g, '') || '',
-			description: values[11]?.replace(/"/g, '') || '',
-			product_name: values[64]?.replace(/"/g, '') || ''
+			created: values[1]?.replace(/"/g, '') || '',
+			gross: values[2]?.replace(/"/g, '') || '',
+			fee: values[11]?.replace(/"/g, '') || '',
+			reporting_category: values[21]?.replace(/"/g, '') || '', // Status column
+			trace_id: values[0]?.replace(/"/g, '') || '', // Use charge ID as trace_id
+			description: values[10]?.replace(/"/g, '') || '',
+			product_name: values[93]?.replace(/"/g, '') || '' // Product Name (metadata)
 		};
 
 		transactions.push(transaction);
@@ -125,28 +125,29 @@ function transform_to_freeagent_format(
 		// Format date as DD/MM/YYYY
 		const date_str = created_date.toLocaleDateString('en-GB');
 
-		// Add sale transaction (positive amount)
-		if (transaction.reporting_category === 'charge') {
+				// Add sale transaction (positive amount) for successful payments
+		if (transaction.reporting_category === 'Paid') {
 			freeagent_transactions.push({
 				date: date_str,
 				amount: gross_amount.toFixed(2),
 				description: `sale | ${transaction.trace_id} | ${transaction.balance_transaction_id} | ${transaction.product_name}`
 			});
-
-			// Add fee transaction (negative amount)
-			if (fee_amount > 0) {
-				freeagent_transactions.push({
-					date: date_str,
-					amount: (-fee_amount).toFixed(2),
-					description: `fee | ${transaction.trace_id} | ${transaction.balance_transaction_id} | ${transaction.product_name}`
-				});
-			}
-		} else if (transaction.reporting_category === 'refund') {
-			// Add refund transaction (negative amount - already negative in CSV)
+		} else if (transaction.reporting_category === 'Refunded') {
+			// Add refund transaction (negative amount)
 			freeagent_transactions.push({
 				date: date_str,
-				amount: gross_amount.toFixed(2),
+				amount: (-gross_amount).toFixed(2),
 				description: `refund | ${transaction.trace_id} | ${transaction.balance_transaction_id} | ${transaction.product_name}`
+			});
+		}
+
+		// Add fee transaction (negative amount) for ALL transactions with fees
+		if (fee_amount > 0) {
+			console.log(`Processing fee: ${fee_amount} for transaction ${transaction.trace_id} (status: ${transaction.reporting_category})`);
+			freeagent_transactions.push({
+				date: date_str,
+				amount: (-fee_amount).toFixed(2),
+				description: `fee | ${transaction.trace_id} | ${transaction.balance_transaction_id} | ${transaction.product_name}`
 			});
 		}
 	}
@@ -180,6 +181,15 @@ function transform_to_freeagent_format(
 		const date_b = new Date(b.date.split('/').reverse().join('-'));
 		return date_a.getTime() - date_b.getTime();
 	});
+
+	// Debug: Calculate total fees
+	let total_fees = 0;
+	freeagent_transactions.forEach(t => {
+		if (t.description.startsWith('fee |')) {
+			total_fees += Math.abs(parseFloat(t.amount));
+		}
+	});
+	console.log(`Total fees processed: ${total_fees.toFixed(2)}`);
 
 	return freeagent_transactions;
 }

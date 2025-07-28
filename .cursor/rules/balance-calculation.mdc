@@ -2,12 +2,53 @@
 alwaysApply: false
 ---
 
-[example]
-Amounts
-1. starting balance: £477.26
-2. Sales: £16715.00
-3. Refunds: £-265.00
-4. Fees: £-441.22
+[Calculations]
 
-Steps
-1. Sales + Refunds + Fees: 16008.78
+Table one: Activity
+
+1. Number of Sales. This is the mathmatical sum of all transactions in the "Amount" column. In the sample this should equal £16450.00. The count in the sample should be 878
+
+2. Number of fees. This is the mathmatical sum of all fees in the "fee" column. In the sample this should equal £-441.22. The count in the sample should be 892
+
+3. Net balance change from activity should be the mathmatical sum of total sales + total fees. The sample should be £16008.78
+
+---
+
+Table two: Payouts
+
+1. Number of transfer payouts should calculate the sum of all transfer payouts. The sample should be -£16425.64. count is 179.
+
+2. Thenumber of stripe direct debits (The times stripe charged my bank because there wasn't enough money for a refund) should be £70.35. Count is 3.
+
+3. Total Payouts (Payouts + Debits) should be £16355.29
+
+
+---
+
+Table three: Balance Change
+
+1. Count of transactions. This is the total number of transactions in the file. refunds or sales. This should be 892 in the sample.
+
+2. Charges Gross amount. This is all the transactions before fees or refunds. In the sample it would be £16715.00
+
+3. Charges Fees. This is the total amount of the fees. In the sample it would be £-441.22
+
+4. Refunds Count. Number of refunds made. sample would be 14
+
+5. Refunds Gross amount. The sum of all the refunds. The sample would be £-265.00
+
+6. Balance Change from Activity count. Sum of transaction count and refund count (892 + 14) sample would be 906.
+
+7. Balance Change from Activity. This is the sum of Charges Gross Amount + Charges Fees + Refunds Gross Amount. The sample should be (16715 + -441.22 + -265) = £16008.78
+
+---
+
+Table four: Ending Balance
+
+1. Starting Balance. Dynamically changes from the form input.
+
+2. The Net Balance change from activity (row 3 from table one).
+
+3. The Total Payouts. (row 3 from table 2)
+
+4. Ending Balance (Starting Balance + Net Balance change from activity + Total Payouts)
