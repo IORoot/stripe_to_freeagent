@@ -69,6 +69,7 @@
 				summary.refunds.count++;
 				summary.refunds.amount += amount;
 				summary.refunds_gross += amount;
+				summary.charges_gross += Math.abs(amount); // Include refunds as positive in charges gross
 			} else if (description.startsWith('transfer to bank account |')) {
 				summary.transfers.count++;
 				summary.transfers.amount += amount;
