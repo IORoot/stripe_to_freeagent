@@ -124,13 +124,20 @@
 
 <main class="min-h-screen bg-gray-50 py-8">
 	<div class="max-w-4xl mx-auto px-4">
+		<!-- Header Image -->
+		<div class="mb-8 text-center">
+			<img src="/header.png" alt="Stripe Reconciler Header" class="mx-auto max-w-full h-auto rounded-lg shadow-md" />
+		</div>
+		
 		<div class="bg-white rounded-lg shadow-lg p-8">
 			<h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">
 				Stripe Reconciler
 			</h1>
 			
 			<p class="text-gray-600 mb-8 text-center">
-				Upload your Stripe balance and payouts CSV files to generate a FreeAgent-compatible reconciliation file.
+				Upload your Stripe balance and payouts CSV files to generate a FreeAgent-compatible reconciliation file. 
+				This tool processes your Stripe transaction data and creates a CSV file with three columns: date, amount, and description. 
+				The generated file can be imported directly into FreeAgent for automatic reconciliation.
 			</p>
 
 			<div class="space-y-6">
@@ -148,7 +155,7 @@
 							class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
 						/>
 						<p class="text-xs text-gray-500">
-							Select the Stripe balance itemised activity CSV file
+							Stripe.com: Navigate to Reports > Balance Summary > "Balance change from activity" > Download (All columns)
 						</p>
 					</div>
 
@@ -164,7 +171,7 @@
 							class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
 						/>
 						<p class="text-xs text-gray-500">
-							Select the Stripe payouts CSV file
+							Stripe.com: Navigate to Reports > Balance Summary > Payouts > Download (All columns)
 						</p>
 					</div>
 				</div>

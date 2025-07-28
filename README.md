@@ -1,6 +1,6 @@
 # Stripe Reconciler
 
-![Header](header.png)
+![Header](static/header.png)
 
 A SvelteKit SaaS application that processes Stripe CSV files and generates FreeAgent-compatible reconciliation data.
 
