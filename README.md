@@ -15,18 +15,47 @@ A SvelteKit SaaS application that processes Stripe CSV files and generates FreeA
 - **Sales**: Creates a positive line for each sale gross amount
 - **Fees**: Creates a negative line for each fee amount
 - **Refunds**: Creates a negative line for refund amounts
-- **Description Format**: `{category} {trace_id} {balance_transaction_id}`
+- **Description Format**: `{category} | {trace_id} | {balance_transaction_id} | {product_name}`
 
 ### Stripe Payouts File Processing
-- **Positive Payouts**: Converts to negative "transfer" amounts
-- **Negative Payouts**: Converts to positive "stripe debit" amounts
-- **Description Format**: `{category} {trace_id} {payout_id}`
+- **Positive Payouts**: Converts to negative "transfer to bank account" amounts
+- **Negative Payouts**: Converts to positive "stripe direct debit" amounts
+- **Description Format**: `{category} | {trace_id} | {payout_id}`
 
 ### Output Format
 The generated CSV file contains exactly three columns:
 1. **Date**: DD/MM/YYYY format
 2. **Amount**: Positive for additions, negative for deductions
 3. **Description**: Complete transaction description
+
+## Balance Calculation Tables
+
+The application generates four summary tables that provide detailed reconciliation information:
+
+### Table 1: Activity Summary
+1. **Number of Sales**: Mathematical sum of all transactions in the "Amount" column
+2. **Number of Fees**: Mathematical sum of all fees in the "fee" column  
+3. **Net Balance Change from Activity**: Sum of total sales + total fees
+
+### Table 2: Payout Summary
+1. **Number of Transfer Payouts**: Sum of all transfer payouts (negative amounts)
+2. **Number of Stripe Direct Debits**: Sum of stripe charges to bank account (positive amounts)
+3. **Total Payouts**: Sum of payouts + debits
+
+### Table 3: Balance Change
+1. **Count of Transactions**: Total number of sales transactions
+2. **Charges Gross Amount**: Sum of all sales before fees or refunds
+3. **Charges Fees**: Total amount of fees (negative)
+4. **Refunds Count**: Number of refunds made
+5. **Refunds Gross Amount**: Sum of all refunds (negative)
+6. **Balance Change from Activity Count**: Sum of transaction count + refund count
+7. **Balance Change from Activity**: Sum of Charges Gross + Charges Fees + Refunds Gross
+
+### Table 4: Ending Balance
+1. **Starting Balance**: Dynamically set from form input
+2. **Net Balance Change from Activity**: From Table 1, row 3
+3. **Total Payouts**: From Table 2, row 3
+4. **Ending Balance**: Starting Balance + Net Balance Change + Total Payouts
 
 ## Installation
 
@@ -58,12 +87,6 @@ Before using this tool, you need to download the required CSV reports from your 
 2. Upload your Stripe payouts CSV file
 3. Click "Process Files" to generate the FreeAgent-compatible CSV
 4. Download the generated `freeagent.csv` file
-
-## Sample Files
-
-The `samples/` directory contains example CSV files for testing:
-- `STRIPE_BALANCE_Itemised_balance_change_from_activity_GBP_2024-05-01_to_2025-04-30_Europe-London.csv`
-- `STRIPE_PAYOUTS_Itemised_payouts_GBP_2024-05-01_to_2025-04-30_Europe-London.csv`
 
 ## Technical Details
 
