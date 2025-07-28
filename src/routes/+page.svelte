@@ -135,15 +135,17 @@
 				Stripe To FreeAgent
 			</h1>
 			
-			<p class="text-gray-600 mb-8 text-center">
-				Upload your Stripe balance and payouts CSV files to generate a FreeAgent-compatible reconciliation file. 
-				This tool processes your Stripe transaction data and creates a CSV file with three columns: date, amount, and description. 
-				The generated file can be imported directly into FreeAgent for automatic reconciliation.
-			</p>
-
-			<!-- YouTube Video -->
-			<div class="mb-8 flex justify-center">
-				<div class="relative w-full max-w-2xl aspect-video">
+			<div class="mb-8 flex items-center gap-8">
+				<div class="flex-1">
+					<p class="text-gray-600">
+						Upload your Stripe balance and payouts CSV files to generate a FreeAgent-compatible reconciliation file. 
+						This tool processes your Stripe transaction data and creates a CSV file with three columns: date, amount, and description. 
+						The generated file can be imported directly into FreeAgent for automatic reconciliation.
+					</p>
+				</div>
+				
+				<!-- YouTube Video -->
+				<div class="w-96 aspect-video">
 					<iframe
 						class="w-full h-full rounded-lg shadow-lg"
 						src="https://www.youtube.com/embed/375OGbosJLU"
