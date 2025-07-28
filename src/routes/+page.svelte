@@ -141,6 +141,20 @@
 				The generated file can be imported directly into FreeAgent for automatic reconciliation.
 			</p>
 
+			<!-- YouTube Video -->
+			<div class="mb-8 flex justify-center">
+				<div class="relative w-full max-w-2xl aspect-video">
+					<iframe
+						class="w-full h-full rounded-lg shadow-lg"
+						src="https://www.youtube.com/embed/375OGbosJLU"
+						title="Stripe To FreeAgent Tutorial"
+						frameborder="0"
+						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+						allowfullscreen
+					></iframe>
+				</div>
+			</div>
+
 			<div class="space-y-6">
 				<!-- File Upload Section -->
 				<div class="grid md:grid-cols-2 gap-6">
