@@ -157,6 +157,8 @@
 				</div>
 			</div>
 
+			<hr class="border-gray-300 mb-8" />
+
 			<div class="space-y-6">
 				<!-- File Upload Section -->
 				<div class="grid md:grid-cols-2 gap-6">
