@@ -132,7 +132,7 @@
 		
 		<div class="bg-white rounded-lg shadow-lg p-8">
 			<h1 class="text-3xl font-bold text-gray-900 mb-8 text-center">
-				Stripe Reconciler
+				Stripe To FreeAgent
 			</h1>
 			
 			<p class="text-gray-600 mb-8 text-center">
